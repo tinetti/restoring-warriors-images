@@ -1,0 +1,34 @@
+services:
+  images:
+    build: .
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-restoring-warriors-images}
+    volumes:
+      - images-data:/data
+    restart: unless-stopped
+
+  mc:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z-cpuv1
+    profiles:
+      - tools
+    depends_on:
+      - images
+    entrypoint: /bin/sh
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-restoring-warriors-images}
+      MINIO_ALIAS: local
+      MINIO_ENDPOINT: http://images:9000
+    volumes:
+      - ./scripts:/scripts:ro
+      - ./samples:/samples:ro
+
+volumes:
+  images-data:
