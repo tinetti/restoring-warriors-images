@@ -50,8 +50,8 @@ INFRA_REPO := "tinetti/devops-tools"
 # with the current commit SHA.  Requires GITHUB_TOKEN.
 deploy-dev:
   @if [ -z "$GITHUB_TOKEN" ]; then echo "Error: GITHUB_TOKEN not set. Run: eval \"\$(bash ../devops-tools/scripts/secrets.sh load)\""; exit 1; fi
-  @echo "Deploying to dev (commit $(git rev-parse --short HEAD))..."
-  @INFRA_REPO="$INFRA_REPO" GITHUB_TOKEN="$GITHUB_TOKEN" bash ../devops-tools/scripts/trigger-deploy.sh restoring-warriors-images "$(git rev-parse --short HEAD)" dev
+  @echo "Deploying to dev (commit $(git rev-parse HEAD))..."
+  @INFRA_REPO="$INFRA_REPO" GITHUB_TOKEN="$GITHUB_TOKEN" bash ../devops-tools/scripts/trigger-deploy.sh restoring-warriors-images "$(git rev-parse HEAD)" dev
 
 # Deploy to prod: builds the Docker image, then dispatches devops-tools deploy-prod.yml
 # with the latest git tag.  Requires GITHUB_TOKEN.
