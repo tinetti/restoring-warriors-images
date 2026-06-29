@@ -1,0 +1,56 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+
+  deploy-dev:
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      INFRA_REPO: tinetti/devops-tools
+    steps:
+      - name: Dispatch dev deployment
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEVOPS_WORKFLOW_TOKEN }}
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${INFRA_REPO}/actions/workflows/deploy-dev.yml/dispatches \
+            -d '{"ref":"main","inputs":{"app_name":"restoring-warriors-images","tag":"${GITHUB_SHA}"}}'
+
+  deploy-prod:
+    needs: ci
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    env:
+      INFRA_REPO: tinetti/devops-tools
+    steps:
+      - name: Dispatch prod deployment
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEVOPS_WORKFLOW_TOKEN }}
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${INFRA_REPO}/actions/workflows/deploy-prod.yml/dispatches \
+            -d '{"ref":"main","inputs":{"app_name":"restoring-warriors-images-prod","tag":"${GITHUB_REF_NAME}"}}'

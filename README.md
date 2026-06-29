@@ -107,7 +107,7 @@ Console login is still a quick human verification step using `MINIO_ROOT_USER` a
 Phase 1 intentionally stops short of:
 
 - DigitalOcean deployment onboarding
-- `test-images.restoringwarriors.com` and `images.restoringwarriors.com` routing
+- `test-minio.restoringwarriors.com` and `minio.restoringwarriors.com` routing
 - full `/images/catalog/...` compatibility and asset migration
 - full shop cutover
 - branded MinIO packaging
